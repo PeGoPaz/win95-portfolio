@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./public/logo.png" alt="Windows 95 Portfolio" width="200" height="200" />
+  <img src="./src/assets/images/logo.png" alt="Windows 95 Portfolio" width="200" height="200" />
 </div>
 
 # 💾 Windows 95 Portfolio
