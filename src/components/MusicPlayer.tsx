@@ -1,4 +1,4 @@
-import { Button, Fieldset } from "@react95/core";
+import { Button, Range, Frame } from "@react95/core";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface Track {
@@ -31,15 +31,17 @@ const formatTime = (seconds: number) => {
 function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.4);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
   const hasTracks = tracks.length > 0;
   const currentTrack = useMemo(() => tracks[currentTrackIndex], [currentTrackIndex]);
 
+  // Handle Volume and Mute
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -47,12 +49,30 @@ function MusicPlayer() {
     audio.muted = isMuted;
   }, [volume, isMuted]);
 
+  // Initial Autoplay Attempt
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !hasTracks) return;
 
-    audio.currentTime = 0;
-    setCurrentTime(0);
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+          setAutoplayBlocked(false);
+        })
+        .catch(() => {
+          setIsPlaying(false);
+          setAutoplayBlocked(true);
+        });
+    }
+  }, [hasTracks]);
+
+  // Track Change Logic
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !hasTracks) return;
+
     if (isPlaying) {
       void audio.play().catch(() => setIsPlaying(false));
     }
@@ -75,78 +95,98 @@ function MusicPlayer() {
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
-      return;
+    } else {
+      void audio.play()
+        .then(() => {
+          setIsPlaying(true);
+          setAutoplayBlocked(false);
+        })
+        .catch(() => setIsPlaying(false));
     }
-
-    void audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        right: "12px",
-        bottom: "48px",
-        width: "320px",
-        zIndex: 2000,
-      }}
-    >
-      <Fieldset legend="Music Player">
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div title={currentTrack?.name ?? "No tracks"} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {currentTrack?.name ?? "No tracks found"}
-          </div>
+    <div style={{ padding: "4px", display: "flex", flexDirection: "column", gap: "12px" }}>
+      {/* LCD-style display for track name */}
+      <Frame
+        variant="field"
+        style={{
+          padding: "6px",
+          backgroundColor: "#000",
+          color: "#0f0",
+          fontFamily: "monospace",
+          fontSize: "14px",
+          height: "32px",
+          display: "flex",
+          alignItems: "center",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {currentTrack?.name ?? "No tracks found"}
+      </Frame>
 
-          <input
-            type="range"
-            min={0}
-            max={duration || 0}
-            value={currentTime}
-            disabled={!hasTracks}
-            onChange={(event) => {
-              const audio = audioRef.current;
-              if (!audio) return;
-              const nextTime = Number(event.target.value);
-              audio.currentTime = nextTime;
-              setCurrentTime(nextTime);
-            }}
-          />
-
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-
-          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-            <Button onClick={goToPreviousTrack} disabled={!hasTracks}>
-              Prev
-            </Button>
-            <Button onClick={togglePlayPause} disabled={!hasTracks}>
-              {isPlaying ? "Pause" : "Play"}
-            </Button>
-            <Button onClick={goToNextTrack} disabled={!hasTracks}>
-              Next
-            </Button>
-            <Button onClick={() => setIsMuted((muted) => !muted)} disabled={!hasTracks}>
-              {isMuted ? "Unmute" : "Mute"}
-            </Button>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "12px", minWidth: "48px" }}>Volume</span>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.01}
-              value={volume}
-              onChange={(event) => setVolume(Number(event.target.value))}
-              disabled={!hasTracks}
-              style={{ width: "100%" }}
-            />
-          </div>
+      {/* Progress section */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <Range
+          min={0}
+          max={duration || 0}
+          value={currentTime}
+          disabled={!hasTracks}
+          onChange={(event) => {
+            const audio = audioRef.current;
+            if (!audio) return;
+            const nextTime = Number(event.target.value);
+            audio.currentTime = nextTime;
+            setCurrentTime(nextTime);
+          }}
+        />
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", fontFamily: "monospace" }}>
+          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(duration)}</span>
         </div>
-      </Fieldset>
+      </div>
+
+      {/* Control buttons */}
+      <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+        <Button onClick={goToPreviousTrack} disabled={!hasTracks} style={{ width: "60px" }}>
+          Prev
+        </Button>
+        <Button onClick={togglePlayPause} disabled={!hasTracks} style={{ width: "80px" }}>
+          {isPlaying ? "Pause" : "Play"}
+        </Button>
+        <Button onClick={goToNextTrack} disabled={!hasTracks} style={{ width: "60px" }}>
+          Next
+        </Button>
+      </div>
+
+      {/* Volume control */}
+      <Frame variant="inside" style={{ padding: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+        <span style={{ fontSize: "11px", minWidth: "40px" }}>Vol</span>
+        <Range
+          min={0}
+          max={1}
+          step={0.01}
+          value={volume}
+          onChange={(event) => setVolume(Number(event.target.value))}
+          disabled={!hasTracks}
+          style={{ flex: 1 }}
+        />
+        <Button
+          onClick={() => setIsMuted((muted) => !muted)}
+          disabled={!hasTracks}
+          style={{ width: "50px", fontSize: "11px", height: "24px" }}
+        >
+          {isMuted ? "Unmute" : "Mute"}
+        </Button>
+      </Frame>
+
+      {autoplayBlocked && !isPlaying && (
+        <div style={{ fontSize: "10px", color: "red", textAlign: "center" }}>
+          Autoplay blocked. Click Play to start.
+        </div>
+      )}
 
       {hasTracks && currentTrack && (
         <audio

@@ -5,9 +5,10 @@ import {
   Joy102,
   Inetcpl1313,
   Wordpad,
-  Mail
+  Mail,
+  MediaCd
 } from "@react95/icons";
-import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import Shutdown from "./Shutdown";
 import { useWindowsStore } from "../store/windows";
@@ -54,6 +55,12 @@ function WindowBar() {
               icon={<Joy102 variant="32x32_4" />}
             >
               Game
+            </List.Item>
+            <List.Item
+              onClick={() => openWindow("Music Player")}
+              icon={<MediaCd variant="32x32_4" />}
+            >
+              Music Player
             </List.Item>
             <List.Item icon={<Settings variant="32x32_4" />}>
               Settings

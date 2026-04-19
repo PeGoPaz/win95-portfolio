@@ -3,7 +3,7 @@ import { AGENTS, ClippyProvider } from "@react95/clippy";
 import WindowBar from "./components/WindowBar";
 import DesktopIcon from "./components/DesktopIcon";
 import Contact from "./components/Contact";
-import { Inetcpl1313, Joy102, Wordpad, Mail } from "@react95/icons";
+import { Inetcpl1313, Joy102, Wordpad, Mail, MediaCd } from "@react95/icons";
 import Resume from "./components/Resume";
 import Game from "./components/Game";
 import MusicPlayer from "./components/MusicPlayer";
@@ -68,13 +68,24 @@ function App() {
               top: "50%",
               left: "50%",
               transform: "translate(-50%,-70%)",
+              opacity: 0.1, // Subtle background logo
+              pointerEvents: "none",
             }}
           />
 
           <ClippyProvider agentName={AGENTS.MERLIN}>
-            <div className="fixed">
+            <div 
+              style={{ 
+                padding: "20px", 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fill, 100px)", 
+                gridTemplateRows: "repeat(auto-fill, 100px)",
+                gap: "20px",
+                height: "calc(100vh - 40px)",
+              }}
+            >
               <DesktopIcon icon={<Inetcpl1313 variant="32x32_4" />} name="Browser">
-                <iframe width={800} height={500} src="https://wiby.org/" title="Wiby" />
+                <iframe width={800} height={500} src="https://wiby.org/" title="Wiby" style={{ border: "none" }} />
               </DesktopIcon>
               <DesktopIcon width={650} icon={<Wordpad variant="32x32_4" />} name="Resume">
                 <Resume />
@@ -85,8 +96,10 @@ function App() {
               <DesktopIcon width={400} icon={<Mail variant="32x32_4" />} name="Contact">
                 <Contact />
               </DesktopIcon>
+              <DesktopIcon width={360} icon={<MediaCd variant="32x32_4" />} name="Music Player">
+                <MusicPlayer />
+              </DesktopIcon>
             </div>
-            <MusicPlayer />
             <WindowBar />
           </ClippyProvider>
         </>

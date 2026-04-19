@@ -12,7 +12,7 @@ const contactLinks = [
 ];
 
 const Contact = () => (
-  <Frame bg="white" boxShadow="in" style={{ padding: 24, minWidth: 320 }}>
+  <Frame backgroundColor="white" boxShadow="in" style={{ padding: 24, minWidth: 320 }}>
     <h2 style={{ marginTop: 0, marginBottom: 16, fontFamily: 'MS Sans Serif', fontSize: 22, color: '#222' }}>Contact Me</h2>
     <List>
       {contactLinks.map(({ icon, label, url }) => (

@@ -1,5 +1,6 @@
 import { ProgressBar } from "@react95/core";
 import { useEffect, useRef, useState } from "react";
+import { useRealisticProgress } from "../utils/useRealisticProgress";
 
 interface StartupScreenProps {
   logoSrc: string;
@@ -8,30 +9,70 @@ interface StartupScreenProps {
 }
 
 function StartupScreen({ logoSrc, soundSrc, onComplete }: StartupScreenProps) {
-  const [progress, setProgress] = useState(0);
   const [audioDurationMs, setAudioDurationMs] = useState(3000);
   const [minimumTimeElapsed, setMinimumTimeElapsed] = useState(false);
   const [audioFinished, setAudioFinished] = useState(false);
   const [appReady, setAppReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Use the realistic progress hook
+  const isEssentiallyComplete = minimumTimeElapsed && (audioFinished || !audioRef.current?.src) && appReady;
+  const progress = useRealisticProgress(isEssentiallyComplete);
+
   useEffect(() => {
     const readyId = requestAnimationFrame(() => setAppReady(true));
     return () => cancelAnimationFrame(readyId);
   }, []);
 
+  // Complete callback when progress reaches 100%
+  useEffect(() => {
+    if (progress >= 100) {
+      const timer = setTimeout(onComplete, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [progress, onComplete]);
+
+  // Preload and play audio logic
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const playPromise = audio.play();
-    if (!playPromise) return;
+    // Set a timeout as fallback for audio duration
+    const timeoutId = setTimeout(() => {
+      setAudioDurationMs(3000); // Default if metadata fails
+    }, 2000);
 
-    playPromise.catch(() => {
-      // Don't block startup forever when autoplay is restricted.
-      setAudioFinished(true);
-    });
-  }, []);
+    const handlePlay = () => {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay restricted, don't block the UI
+          setAudioFinished(true);
+        });
+      }
+    };
+
+    if (audio.readyState >= 2) {
+      handlePlay();
+    } else {
+      audio.oncanplay = handlePlay;
+    }
+
+    // Also handle click to play as a last resort if blocked
+    const handleClickToPlay = () => {
+      if (audio.paused && !audioFinished) {
+        handlePlay();
+      }
+      window.removeEventListener("click", handleClickToPlay);
+    };
+    window.addEventListener("click", handleClickToPlay);
+
+    return () => {
+      clearTimeout(timeoutId);
+      audio.oncanplay = null;
+      window.removeEventListener("click", handleClickToPlay);
+    };
+  }, [audioFinished]);
 
   useEffect(() => {
     setMinimumTimeElapsed(false);
@@ -41,25 +82,6 @@ function StartupScreen({ logoSrc, soundSrc, onComplete }: StartupScreenProps) {
 
     return () => window.clearTimeout(timer);
   }, [audioDurationMs]);
-
-  useEffect(() => {
-    const done = minimumTimeElapsed && audioFinished && appReady;
-    if (done) {
-      setProgress(100);
-      const timer = window.setTimeout(onComplete, 150);
-      return () => window.clearTimeout(timer);
-    }
-
-    const interval = window.setInterval(() => {
-      setProgress((previous) => {
-        if (previous >= 94) return previous;
-        const nextStep = 1 + Math.floor(Math.random() * 4);
-        return Math.min(previous + nextStep, 94);
-      });
-    }, 120);
-
-    return () => window.clearInterval(interval);
-  }, [minimumTimeElapsed, audioFinished, appReady, onComplete]);
 
   return (
     <div
@@ -75,7 +97,13 @@ function StartupScreen({ logoSrc, soundSrc, onComplete }: StartupScreenProps) {
     >
       <div style={{ width: "420px", display: "flex", flexDirection: "column", alignItems: "center", gap: "24px" }}>
         <img src={logoSrc} alt="logo" width={220} />
-        <ProgressBar percent={progress} width="100%" />
+        <ProgressBar
+          {...({
+            variant: "tile",
+            value: Math.floor(progress),
+            style: { width: "100%" },
+          } as any)}
+        />
       </div>
       <audio
         ref={audioRef}
