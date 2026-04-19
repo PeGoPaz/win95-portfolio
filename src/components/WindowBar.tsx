@@ -2,7 +2,6 @@ import { List, TaskBar } from "@react95/core";
 import {
   Computer3,
   Settings,
-  Amovie2,
   Joy102,
   Inetcpl1313,
   Wordpad,
@@ -67,12 +66,6 @@ function WindowBar() {
               icon={<Inetcpl1313 variant="32x32_4" />}
             >
               Browser
-            </List.Item>
-            <List.Item
-              onClick={() => openWindow("Video")}
-              icon={<Amovie2 variant="32x32_4" />}
-            >
-              Video
             </List.Item>
             <List.Item
               onClick={() => openWindow("Resume")}

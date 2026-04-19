@@ -1,7 +1,6 @@
 import { Button, Fieldset, Modal, RadioButton, TitleBar } from "@react95/core";
 import { Computer3 } from "@react95/icons";
 import { useState, type ComponentType } from "react";
-import { useAuth } from "../store/auth";
 import Sound from "../utils/Sound";
 
 type ShutdownOption = "shutdown" | "restart" | "restart-incompatible";
@@ -14,14 +13,11 @@ function Shutdown({ close }: ShutdownProps) {
   const [selectedOption, setSelectedOption] =
     useState<ShutdownOption>("shutdown");
   const [playSound, setPlaySound] = useState(false);
-  const logout = useAuth((state) => state.logout);
 
   const handleConfirm = () => {
     if (selectedOption === "shutdown") {
       setPlaySound(true);
-
-      logout();
-      close();
+      setTimeout(close, 300);
     } else {
       close();
     }
