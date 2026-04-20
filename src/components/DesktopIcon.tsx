@@ -1,5 +1,6 @@
 // DesktopIcon.js
 import React, { type ReactElement, type ReactNode } from "react";
+import type { DragOptions } from "@neodrag/react";
 import { useWindowsStore } from "../store/windows";
 import Window from "./Window";
 
@@ -35,6 +36,7 @@ interface DesktopIconProps {
   children: ReactNode;
   width?: number;
   height?: number;
+  dragOptions?: Omit<DragOptions, "handle">;
 }
 
 const DesktopIcon = ({
@@ -43,6 +45,7 @@ const DesktopIcon = ({
   children,
   width,
   height,
+  dragOptions,
 }: DesktopIconProps) => {
   const { openWindow, closeWindow, isWindowOpen } = useWindowsStore();
   const isOpen = isWindowOpen(name);
@@ -66,6 +69,7 @@ const DesktopIcon = ({
           id={name}
           width={width}
           height={height}
+          dragOptions={dragOptions}
           icon={React.cloneElement(icon, { variant: "16x16_4" })}
           title={name}
           onClose={handleCloseWindow}

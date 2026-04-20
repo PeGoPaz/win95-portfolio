@@ -1,5 +1,6 @@
 import { type ReactElement, type ReactNode, type ComponentType } from "react";
 import { Modal, TitleBar, useModal } from "@react95/core";
+import type { DragOptions } from "@neodrag/react";
 
 interface WindowProps {
   id: string;
@@ -8,13 +9,14 @@ interface WindowProps {
   children: ReactNode;
   width?: number;
   height?: number;
+  dragOptions?: Omit<DragOptions, "handle">;
   onClose: () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SafeModal = Modal as unknown as ComponentType<any>;
 
-const Window = ({ id, title, onClose, children, icon, width, height }: WindowProps) => {
+const Window = ({ id, title, onClose, children, icon, width, height, dragOptions }: WindowProps) => {
   const { minimize } = useModal();
   
   return (
@@ -22,6 +24,7 @@ const Window = ({ id, title, onClose, children, icon, width, height }: WindowPro
       id={id}
       icon={icon}
       title={title}
+      dragOptions={dragOptions}
       titleBarOptions={[
         <TitleBar.Minimize
           style={{ marginBlock: "auto" }}

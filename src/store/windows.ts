@@ -8,7 +8,7 @@ interface WindowStore {
 }
 
 export const useWindowsStore = create<WindowStore>((set, get) => ({
-  openWindows: [],
+  openWindows: ["Music Player"],
   openWindow: (title) =>
     set((state) => ({ openWindows: [...new Set([...state.openWindows, title])] })),
   closeWindow: (title) =>

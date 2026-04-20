@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AGENTS, ClippyProvider } from "@react95/clippy";
 import WindowBar from "./components/WindowBar";
 import DesktopIcon from "./components/DesktopIcon";
@@ -11,10 +11,41 @@ import StartupScreen from "./components/StartupScreen";
 import logoSrc from "./assets/images/logo.png";
 import startupSoundSrc from "./assets/sounds/startup.mp3";
 import clickSoundSrc from "./assets/sounds/mouse_click.mp3";
+import type { DragOptions } from "@neodrag/react";
+
+const MUSIC_PLAYER_WIDTH = 360;
+const MUSIC_PLAYER_HEIGHT = 240;
+const TASKBAR_HEIGHT = 42;
+const MODAL_TOP_OFFSET = 50;
+const SCREEN_MARGIN = 16;
+const CLIPPY_CLEARANCE_BOTTOM = 120;
+
+const getMusicPlayerDragOptions = (): Omit<DragOptions, "handle"> | undefined => {
+  if (typeof window === "undefined") return undefined;
+
+  const x = Math.max(SCREEN_MARGIN, window.innerWidth - MUSIC_PLAYER_WIDTH - SCREEN_MARGIN);
+  const y = Math.max(
+    0,
+    window.innerHeight -
+      TASKBAR_HEIGHT -
+      CLIPPY_CLEARANCE_BOTTOM -
+      MUSIC_PLAYER_HEIGHT -
+      MODAL_TOP_OFFSET
+  );
+
+  return {
+    defaultPosition: { x, y },
+    bounds: "body",
+  };
+};
 
 function App() {
   const [showDesktop, setShowDesktop] = useState(false);
   const clickAudioRef = useRef<HTMLAudioElement | null>(null);
+  const musicPlayerDragOptions = useMemo(
+    () => (showDesktop ? getMusicPlayerDragOptions() : undefined),
+    [showDesktop]
+  );
 
   useEffect(() => {
     const clickAudio = new Audio(clickSoundSrc);
@@ -96,7 +127,13 @@ function App() {
               <DesktopIcon width={400} icon={<Mail variant="32x32_4" />} name="Contact">
                 <Contact />
               </DesktopIcon>
-              <DesktopIcon width={360} icon={<MediaCd variant="32x32_4" />} name="Music Player">
+              <DesktopIcon
+                width={MUSIC_PLAYER_WIDTH}
+                height={MUSIC_PLAYER_HEIGHT}
+                dragOptions={musicPlayerDragOptions}
+                icon={<MediaCd variant="32x32_4" />}
+                name="Music Player"
+              >
                 <MusicPlayer />
               </DesktopIcon>
             </div>

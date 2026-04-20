@@ -1,4 +1,4 @@
-import { ProgressBar } from "@react95/core";
+import { Frame } from "@react95/core";
 import { useEffect, useRef, useState } from "react";
 import { useRealisticProgress } from "../utils/useRealisticProgress";
 
@@ -83,6 +83,9 @@ function StartupScreen({ logoSrc, soundSrc, onComplete }: StartupScreenProps) {
     return () => window.clearTimeout(timer);
   }, [audioDurationMs]);
 
+  const tilesCount = 24;
+  const activeTiles = Math.round((progress / 100) * tilesCount);
+
   return (
     <div
       style={{
@@ -95,15 +98,40 @@ function StartupScreen({ logoSrc, soundSrc, onComplete }: StartupScreenProps) {
         zIndex: 9999,
       }}
     >
-      <div style={{ width: "420px", display: "flex", flexDirection: "column", alignItems: "center", gap: "24px" }}>
+      <div
+        style={{
+          width: "420px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "20px",
+          transform: "translateY(-12%)",
+        }}
+      >
         <img src={logoSrc} alt="logo" width={220} />
-        <ProgressBar
-          {...({
-            variant: "tile",
-            value: Math.floor(progress),
-            style: { width: "100%" },
-          } as any)}
-        />
+        <Frame variant="well" style={{ width: "100%", padding: "4px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${tilesCount}, 1fr)`,
+              gap: "2px",
+              height: "16px",
+            }}
+          >
+            {Array.from({ length: tilesCount }, (_, index) => (
+              <div
+                key={index}
+                style={{
+                  background: index < activeTiles ? "#0000a8" : "#c0c0c0",
+                  borderTop: "1px solid #d9d9d9",
+                  borderLeft: "1px solid #d9d9d9",
+                  borderRight: "1px solid #808080",
+                  borderBottom: "1px solid #808080",
+                }}
+              />
+            ))}
+          </div>
+        </Frame>
       </div>
       <audio
         ref={audioRef}
