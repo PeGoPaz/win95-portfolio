@@ -18,10 +18,10 @@ Welcome to my digital time capsule! This isn't your average portfolio – this i
 
 ```bash
 # Clone this repository like it's 1995
-git clone https://github.com/alishirani1384/win95-portfolio.git
+git clone https://github.com/PeGoPaz/win95-portfolio.git
 
 # Navigate to the directory
-cd win-portfolio
+cd win95-portfolio
 
 # Install dependencies (npm didn't exist in 95, but we adapt)
 npm install
@@ -31,6 +31,16 @@ npm run dev
 
 # Boom! Your desktop awaits at http://localhost:5173
 ```
+
+## 🚢 Deployment (GitHub Pages)
+
+This repo includes a GitHub Actions workflow that automatically deploys on every push to `main`.
+
+1. In GitHub, open **Settings → Pages**.
+2. Set **Source** to **GitHub Actions**.
+3. Push to `main` (or run the workflow manually from **Actions**).
+
+The workflow builds with `npm run build` and publishes `dist/` to Pages.
 
 ## 🎮 Features
 
